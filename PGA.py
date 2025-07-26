@@ -1,6 +1,7 @@
 import random
+import copy
 from typing import List
-from mutation_operators import *
+import mutation_operator
 from Individual import Individual  # Suponiendo que tu clase está en individual.py
 
 
@@ -12,7 +13,7 @@ def generate_population(n_max: int, N: int, M: int, S: int) -> List[Individual]:
     population = []
     for _ in range(n_max):
         route = random.sample(range(1, N + 1), N)  # Permutación aleatoria de 1 a N
-        breakpoints = modify_breaks(N, S, M)       # Breakpoints válidos
+        breakpoints = mutation_operator.modify_breaks(N, S, M)       # Breakpoints válidos
         individual = Individual(route=route, breakpoints=breakpoints)
         population.append(individual)
     return population
@@ -46,8 +47,7 @@ def evaluate_fitness(population, distance_matrix):
         ind.set_total_distance(total_distance)
         ind.set_fitness(1.0 / total_distance if total_distance > 0 else 0.0)
 
-import random
-from typing import List
+
 
 def roulette_elitist_selection(population: List, gamma: float) -> List:
     """
@@ -110,8 +110,8 @@ def pga_iteration(population: List,distance_matrix: List[List[float]], gamma: fl
 
     while len(new_population) < n_max:
         # Clonar seleccionados para no alterar originales
-        clones = [ind for ind in selected]
-        mutate_population(clones, route_mut_prob, break_mut_prob, num_salesmen, min_cities)
+        clones = [copy.deepcopy(ind) for ind in selected]
+        mutation_operator.mutate_population(clones, route_mut_prob, break_mut_prob, num_salesmen, min_cities)
 
         # Evaluar clones mutados
         evaluate_fitness(clones, distance_matrix)
@@ -122,15 +122,16 @@ def pga_iteration(population: List,distance_matrix: List[List[float]], gamma: fl
 
     return new_population
 
-def PGA(k: int,
+def pga(k: int,
         n_max: int,
         N: int,
         M: int,
         S: int,
         gamma: float,
-        route_mut_prob: float,
-        break_mut_prob: float,
-        distance_matrix) -> Individual:
+        distance_matrix,
+        route_mut_prob: float = 0.02,
+        break_mut_prob: float = 0.01,
+        ) -> Individual:
     """
     Ejecuta el algoritmo PGA completo por k iteraciones.
     Devuelve el mejor individuo encontrado.
@@ -167,3 +168,4 @@ def PGA(k: int,
         print(f"Iteración {iteration+1}: Best fitness = {current_best.get_fitness():.4f}")
 
     return best_solution
+
