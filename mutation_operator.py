@@ -82,3 +82,4 @@ def modify_breaks(N: int, S: int, M: int) -> List[int]:
                 and N - breaks[-1] >= M):
             return breaks
     raise ValueError("Unable to generate valid breakpoints with given constraints.")
+
