@@ -68,8 +68,15 @@ def ipga_iteration(population, distance_matrix, num_salesmen, min_cities):
         # Paso 2: Elegir el mejor del grupo según fitness
         best = max(grupo, key=lambda ind: ind.get_fitness())
 
+        descendants = []
         # Paso 3: Clonar 10 veces al mejor
-        descendants = [copy.deepcopy(best) for _ in range(10)]
+        for _ in range(10):
+            new_ind = Individual()
+            new_ind.set_route(best.get_route()[:])  # copia de la lista
+            new_ind.set_breakpoints(best.get_breakpoints()[:])  # copia de la lista
+            new_ind.set_fitness(best.get_fitness())
+            new_ind.set_total_distance(best.get_total_distance())
+            descendants.append(new_ind)
 
         # Paso 4: Seleccionar segmentos I, J y posición P para mutaciones
         route_len = len(best.get_route())
@@ -79,7 +86,7 @@ def ipga_iteration(population, distance_matrix, num_salesmen, min_cities):
             i, j = sorted(random.sample(range(route_len), 2))
         p = random.randint(0, route_len)
 
-        descendants = apply_mutations(descendants,i,j,p,n,num_salesmen,min_cities)
+        descendants = apply_mutations(descendants,i,j,p,len(best.get_route()),num_salesmen,min_cities)
 
         # Evaluar descendants y agregarlos
         evaluate_fitness(descendants, distance_matrix)
@@ -90,46 +97,44 @@ def ipga_iteration(population, distance_matrix, num_salesmen, min_cities):
 
 
 def apply_mutations(descendants, I, J, P, N, S, M):
-    """
-    Aplica las 10 mutaciones específicas del esquema IPGA a la lista de 10 clones.
-    """
     if len(descendants) != 10:
         raise ValueError("Se esperaban exactamente 10 descendants.")
 
     # (0) nada
 
     # (1) FlipInsert
-    mutation_operator.flip_insert(descendants[1], I, J, P)
+    descendants[1].set_route(mutation_operator.flip_insert(descendants[1].get_route(), I, J, P))
 
     # (2) SwapInsert
-    mutation_operator.swap_insert(descendants[2], I, J, P)
+    descendants[2].set_route(mutation_operator.swap_insert(descendants[2].get_route(), I, J, P))
 
     # (3) LSlideInsert
-    mutation_operator.lslide_insert(descendants[3], I, J, P)
+    descendants[3].set_route(mutation_operator.lslide_insert(descendants[3].get_route(), I, J, P))
 
     # (4) RSlideInsert
-    mutation_operator.rslide_insert(descendants[4], I, J, P)
+    descendants[4].set_route(mutation_operator.rslide_insert(descendants[4].get_route(), I, J, P))
 
     # (5) Modify Breaks
-    mutation_operator.modify_breaks(descendants[5], N, S, M)
+    descendants[5].set_breakpoints(mutation_operator.modify_breaks(N, S, M))
 
     # (6) FlipInsert + Modify Breaks
-    mutation_operator.flip_insert(descendants[6], I, J, P)
-    mutation_operator.modify_breaks(descendants[6], N, S, M)
+    descendants[6].set_route(mutation_operator.flip_insert(descendants[6].get_route(), I, J, P))
+    descendants[6].set_breakpoints(mutation_operator.modify_breaks(N, S, M))
 
     # (7) SwapInsert + Modify Breaks
-    mutation_operator.swap_insert(descendants[7], I, J, P)
-    mutation_operator.modify_breaks(descendants[7], N, S, M)
+    descendants[7].set_route(mutation_operator.swap_insert(descendants[7].get_route(), I, J, P))
+    descendants[7].set_breakpoints(mutation_operator.modify_breaks(N, S, M))
 
     # (8) LSlideInsert + Modify Breaks
-    mutation_operator.lslide_insert(descendants[8], I, J, P)
-    mutation_operator.modify_breaks(descendants[8], N, S, M)
+    descendants[8].set_route(mutation_operator.lslide_insert(descendants[8].get_route(), I, J, P))
+    descendants[8].set_breakpoints(mutation_operator.modify_breaks(N, S, M))
 
     # (9) RSlideInsert + Modify Breaks
-    mutation_operator.rslide_insert(descendants[9], I, J, P)
-    mutation_operator.modify_breaks(descendants[9], N, S, M)
+    descendants[9].set_route(mutation_operator.rslide_insert(descendants[9].get_route(), I, J, P))
+    descendants[9].set_breakpoints(mutation_operator.modify_breaks(N, S, M))
 
     return descendants
+
 
 
 def ipga(k: int,
@@ -154,7 +159,7 @@ def ipga(k: int,
 
     # Paso 4: Iteraciones del IPGA
     for iteration in range(k):
-        population = ipga_genetic_operator(
+        population = ipga_iteration(
             population=population,
             distance_matrix=distance_matrix,
             num_salesmen=S,

@@ -3,7 +3,7 @@ from matplotlib.patches import FancyArrowPatch
 from typing import List
 import numpy as np
 import tsplib95
-import PGA
+import PGA, IPGA
 
 def read_tsp_coordenates(filepath):
     coords = []
@@ -153,7 +153,7 @@ def plot_feasible_solution(individual, coords):
 
 
 def main():
-    path_file="Instances/eil51.tsp"
+    path_file="Instances/bier127.tsp"
     problem = tsplib95.load(path_file)
     n = problem.dimension
     distance_matrix= tsp_to_distance_matrix(path_file)
@@ -162,17 +162,22 @@ def main():
     N = n        # Número de ciudades
     M = 10       #Mínimo de ciudades por visitar
     S = 4          # Número de agentes viajeros
-    n_max = 300      # Tamaño de la población
-    k = 1000     # Número de iteraciones
+    n_max = 100      # Tamaño de la población
+    k = 100     # Número de iteraciones
     gamma = 0.20    # Porcentaje de elitismo (20%)
 
     
 
     # Ejecutar el algoritmo PGA
-    best_solution = PGA.pga(n_max=n_max, N=N, M=M, S=S, k=k, gamma=gamma, distance_matrix=distance_matrix)
+    '''best_solution = PGA.pga(n_max=n_max, N=N, M=M, S=S, k=k, gamma=gamma, distance_matrix=distance_matrix)
+    print(best_solution)
+    # Ploteo del mejor individuo
+    plot_feasible_solution(best_solution, coords)'''
+    best_solution = IPGA.ipga(k=k, n_max = n_max, N = N, M=M, S=S, distance_matrix = distance_matrix)
     print(best_solution)
     # Ploteo del mejor individuo
     plot_feasible_solution(best_solution, coords)
+
 
 if __name__ == "__main__":
     main()
