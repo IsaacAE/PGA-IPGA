@@ -73,13 +73,29 @@ def mutate_breakpoints(individual, num_salesmen: int, min_cities: int):
     individual.set_breakpoints(new_breakpoints)
 
 
-def modify_breaks(N: int, S: int, M: int) -> List[int]:
-    max_attempts = 1000
-    for _ in range(max_attempts):
-        breaks = sorted(random.sample(range(1, N), S - 1))
-        if (all(b2 - b1 >= M for b1, b2 in zip([0] + breaks, breaks + [N]))
-                and breaks[0] >= M
-                and N - breaks[-1] >= M):
-            return breaks
-    raise ValueError("Unable to generate valid breakpoints with given constraints.")
+def modify_breaks(N: int, S: int, m: int) -> List[int]:
+    # cantidad mínima de ciudades requeridas por la separación
+    min_total = m * S
+    if min_total > N:
+        raise ValueError("No se pueden asignar al menos m ciudades por segmento con el N dado.")
+    
+    # ciudades extra a distribuir libremente
+    extras = N - min_total
+
+    # repartir extras aleatoriamente entre los S segmentos
+    additions = [0] * S
+    for _ in range(extras):
+        additions[random.randint(0, S - 1)] += 1
+
+    # longitud real de cada segmento
+    lengths = [m + x for x in additions]
+
+    # calcular los puntos de ruptura acumulando las longitudes
+    breaks = []
+    acc = 0
+    for length in lengths[:-1]:  # S - 1 rupturas
+        acc += length
+        breaks.append(acc)
+    
+    return breaks
 
